@@ -56,6 +56,7 @@ const Input = forwardRef(
             setIsFocused(false);
             onBlur();
           }}
+          accessibilityLabel={label}
           placeholder={placeholder}
           returnKeyType={returnKeyType}
           maxLength={maxLength}

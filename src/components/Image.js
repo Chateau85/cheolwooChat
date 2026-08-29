@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import styled from "styled-components/native";
 import PropTypes from "prop-types";
-import { MaterialIcons } from "@expo/vector-icons";
 import { Alert, Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
@@ -17,16 +16,20 @@ const ButtonContainer = styled.TouchableOpacity`
   align-items: center;
 `;
 
-const ButtonIcon = styled(MaterialIcons).attrs(({ theme }) => ({
-  name: "photo-camera",
-  size: 22,
-  color: theme.imgBtnIcon,
-}))``;
+const ButtonIcon = styled.Text`
+  color: ${({ theme }) => theme.imgBtnIcon};
+  font-size: 11px;
+  font-weight: 700;
+`;
 
 const PhotoButton = ({ onPress }) => {
   return (
-    <ButtonContainer onPress={onPress}>
-      <ButtonIcon />
+    <ButtonContainer
+      accessibilityLabel="프로필 사진 변경"
+      accessibilityRole="button"
+      onPress={onPress}
+    >
+      <ButtonIcon>편집</ButtonIcon>
     </ButtonContainer>
   );
 };
@@ -43,31 +46,24 @@ const ProfileImage = styled.Image`
 `;
 
 const Image = ({ url, showButton, onChangePhoto }) => {
-  useEffect(() => {
-    (async () => {
-      if (Platform.OS !== "web") {
-        const { status } =
-          await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert(
-            "Photo Permission",
-            "Please turn on the camera permission."
-          );
-        }
-      }
-    })();
-  }, []);
-
   const _handlePhotoBtnPress = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    if (Platform.OS !== "web") {
+      const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!granted) {
+        Alert.alert("사진 권한 필요", "설정에서 사진 보관함 접근을 허용해 주세요.");
+        return;
+      }
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
       allowsEditing: true,
-      aspect: [1, 2],
+      aspect: [1, 1],
       quality: 1,
     });
 
-    if (!result.cancelled) {
-      onChangePhoto(result.uri);
+    if (!result.canceled && result.assets?.[0]) {
+      onChangePhoto(result.assets[0].uri);
     }
   };
 

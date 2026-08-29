@@ -1,9 +1,9 @@
 import React, { useState, useRef } from "react";
 import styled from "styled-components/native";
-import { Button, Image, Input } from "../components";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { Button, ErrorMessage, Image, Input } from "../components";
 import { signup } from "../firebase";
-import { Alert } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { getAuthErrorMessage, normalizeEmail, validateSignup } from "../utils";
 
 const Container = styled.View`
   flex: 1;
@@ -21,24 +21,37 @@ const Signup = ({ navigation }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordConfirm, setPAsswordConfirm] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const refEmail = useRef(null);
   const refPassword = useRef(null);
   const refPasswordConfirm = useRef(null);
 
   const _handleSignupBtnPress = async () => {
+    const validationMessage = validateSignup({ name, email, password, passwordConfirm });
+    setErrorMessage(validationMessage);
+    if (validationMessage) return;
+
     try {
-      const user = await signup({ name, email, password, photo });
-      navigation.navigate("Profile", { user });
+      setIsSubmitting(true);
+      const user = await signup({ name: name.trim(), email, password, photo });
+      navigation.replace("Profile", { user });
     } catch (e) {
-      Alert.alert("Signup Error", e.message);
+      Alert.alert("회원가입 실패", getAuthErrorMessage(e));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <KeyboardAwareScrollView extraScrollHeight={20}>
-      <Container>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1 }}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <Container>
         <Image showButton={true} url={photo} onChangePhoto={setPhoto} />
         <Input
           label="Name"
@@ -54,7 +67,7 @@ const Signup = ({ navigation }) => {
           placeholder="Email"
           returnKeyType="next"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(value) => setEmail(normalizeEmail(value))}
           onSubmitEditing={() => refPassword.current.focus()}
         />
         <Input
@@ -73,13 +86,19 @@ const Signup = ({ navigation }) => {
           placeholder="Password"
           returnKeyType="done"
           value={passwordConfirm}
-          onChangeText={setPAsswordConfirm}
+          onChangeText={setPasswordConfirm}
           isPassword={true}
           onSubmitEditing={_handleSignupBtnPress}
         />
-        <Button title="Sign up" onPress={_handleSignupBtnPress} />
-      </Container>
-    </KeyboardAwareScrollView>
+        <ErrorMessage message={errorMessage} />
+        <Button
+          title={isSubmitting ? "Signing up..." : "Sign up"}
+          onPress={_handleSignupBtnPress}
+          disabled={isSubmitting}
+        />
+        </Container>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

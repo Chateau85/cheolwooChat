@@ -1,38 +1,37 @@
 {
   "name": "rn-chat",
   "version": "1.0.0",
+  "type": "module",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "eject": "expo eject"
+    "prebuild": "expo prebuild",
+    "test": "node --test",
+    "check": "npx expo-doctor"
   },
   "dependencies": {
-    "@expo/vector-icons": "^12.0.0",
-    "@react-native-async-storage/async-storage": "^1.15.14",
-    "@react-native-community/masked-view": "^0.1.11",
-    "@react-navigation/native": "^6.0.6",
-    "@react-navigation/stack": "^6.0.11",
-    "expo": "~43.0.2",
-    "expo-image-picker": "~11.0.3",
-    "expo-status-bar": "~1.1.0",
-    "firebase": "^9.6.1",
-    "prop-types": "^15.7.2",
-    "react": "17.0.1",
-    "react-dom": "17.0.1",
-    "react-native": "0.64.3",
-    "react-native-gesture-handler": "~1.10.2",
-    "react-native-keyboard-aware-scroll-view": "^0.9.5",
-    "react-native-reanimated": "~2.2.0",
-    "react-native-safe-area-context": "3.3.2",
-    "react-native-screens": "~3.8.0",
-    "react-native-web": "0.17.1",
-    "styled-components": "^5.3.3"
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-navigation/native": "^7.3.18",
+    "@react-navigation/stack": "^7.10.24",
+    "expo": "~57.0.18",
+    "expo-image-picker": "~57.0.5",
+    "expo-status-bar": "~57.0.0",
+    "firebase": "^12.18.0",
+    "prop-types": "^15.8.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-gesture-handler": "~2.32.0",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-web": "^0.21.0",
+    "styled-components": "^6.1.19"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9"
+    "@babel/core": "^7.25.2"
   },
   "private": true
 }
