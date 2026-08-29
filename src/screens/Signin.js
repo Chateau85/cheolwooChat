@@ -1,12 +1,11 @@
-import React, { useContext, useState, useRef, useEffect } from "react";
+import React, { useContext, useMemo, useRef, useState } from "react";
 import { ThemeContext } from "styled-components/native";
 import styled from "styled-components/native";
 import { Button, Image, Input, ErrorMessage } from "../components";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { signin } from "../firebase";
-import { Alert } from "react-native";
-import { validateEmail, removeWhitespace } from "../utils";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { getAuthErrorMessage, normalizeEmail, validateEmail } from "../utils";
 
 const Container = styled.View`
   flex: 1;
@@ -28,15 +27,15 @@ const Signin = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [disabled, setDisabled] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const refPassword = useRef(null);
-
-  useEffect(() => {
-    setDisabled(!(email && password && !errorMessage));
-  }, [email, password, errorMessage]);
+  const disabled = useMemo(
+    () => !email || !password || Boolean(errorMessage) || isSubmitting,
+    [email, password, errorMessage, isSubmitting]
+  );
 
   const _handleEmailChange = (email) => {
-    const changedEmail = removeWhitespace(email);
+    const changedEmail = normalizeEmail(email);
     setEmail(changedEmail);
     setErrorMessage(
       validateEmail(changedEmail) ? "" : "Please verify your email"
@@ -44,24 +43,28 @@ const Signin = ({ navigation }) => {
   };
 
   const _handlePasswordChange = (password) => {
-    setPassword(removeWhitespace(password));
+    setPassword(password);
   };
 
   const _handleSigninBtnPress = async () => {
     try {
+      setIsSubmitting(true);
       const user = await signin({ email, password });
-      navigation.navigate("Profile", { user });
+      navigation.replace("Profile", { user });
     } catch (e) {
-      Alert.alert("Signin Error", e.message);
+      Alert.alert("로그인 실패", getAuthErrorMessage(e));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <KeyboardAwareScrollView
-      extraScrollHeight={20}
-      contentContainerStyle={{ flex: 1 }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1 }}
     >
-      <Container insets={insets}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <Container insets={insets}>
         <Image url={LOGO} />
         <Input
           label="Email"
@@ -83,7 +86,7 @@ const Signin = ({ navigation }) => {
         />
         <ErrorMessage message={errorMessage} />
         <Button
-          title="Sign in"
+          title={isSubmitting ? "Signing in..." : "Sign in"}
           onPress={_handleSigninBtnPress}
           disabled={disabled}
         />
@@ -93,8 +96,9 @@ const Signin = ({ navigation }) => {
           containerStyle={{ marginTop: 0, backgroundColor: "transparent" }}
           textStyle={{ color: theme.btnTextLink, fontSize: 18 }}
         />
-      </Container>
-    </KeyboardAwareScrollView>
+        </Container>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

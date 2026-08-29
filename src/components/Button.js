@@ -22,6 +22,8 @@ const Title = styled.Text`
 const Button = ({ title, onPress, containerStyle, textStyle, disabled }) => {
   return (
     <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
       onPress={onPress}
       style={{ flexDirection: "row" }}
       disabled={disabled}
@@ -36,8 +38,8 @@ const Button = ({ title, onPress, containerStyle, textStyle, disabled }) => {
 Button.propTypes = {
   title: PropTypes.string.isRequired,
   onPress: PropTypes.func.isRequired,
-  containerStyle: PropTypes.object,
-  textStyle: PropTypes.object,
+  containerStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  textStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   disabled: PropTypes.bool,
 };
 
